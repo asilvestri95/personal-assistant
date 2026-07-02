@@ -3,9 +3,9 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  ChevronLeft, Plus, Trash2, Loader2, Share2, Copy,
+  ChevronLeft, Plus, Loader2, Share2, Copy,
   ChevronDown, ChevronRight, Check, X, Pencil, Package2,
-  MapPin, Calendar, CheckSquare, Square,
+  MapPin, Calendar,
 } from "lucide-react";
 import { cn, formatDate, getProgress } from "@/lib/utils";
 import type { PackingList, PackingListItem } from "@prisma/client";

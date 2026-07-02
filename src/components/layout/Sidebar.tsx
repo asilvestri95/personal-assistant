@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Package, LogOut, ChevronRight, Settings } from "lucide-react";
+import { Package, LogOut, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {

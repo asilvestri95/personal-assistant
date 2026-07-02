@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Loader2, ChevronLeft, GripVertical, Pencil, Check, X } from "lucide-react";
 import type { DefaultPackingItem } from "@prisma/client";
@@ -11,7 +10,6 @@ interface Props {
 }
 
 export function DefaultsClient({ items: initial }: Props) {
-  const router = useRouter();
   const [items, setItems] = useState(initial);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");

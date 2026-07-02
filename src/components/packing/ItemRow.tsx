@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Trash2, Loader2, Check, X, Pencil, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PackingListItem } from "@prisma/client";
