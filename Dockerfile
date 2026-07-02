@@ -5,7 +5,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+# npm ci needs a lockfile; fall back to install if it's missing
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Rebuild source code only when needed
 FROM base AS builder
@@ -14,6 +15,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 RUN npm run build
+
+# Migration runner — has full node_modules so prisma CLI works
+FROM base AS migrator
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
+COPY prisma ./prisma
+CMD ["npx", "prisma", "migrate", "deploy"]
 
 # Production image
 FROM base AS runner
@@ -26,19 +35,10 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-# Need prisma CLI for migrate deploy at runtime
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
-
-COPY docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh && chown nextjs:nodejs docker-entrypoint.sh
 
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "docker-entrypoint.sh"]
+CMD ["node", "server.js"]

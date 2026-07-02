@@ -35,14 +35,30 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await db.user.create({
-      data: { name, email, passwordHash },
+    const claimed = await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { name, email, passwordHash },
+      });
+
+      // Atomic claim: only succeeds if the code is still unused, so two
+      // concurrent registrations can't both consume it.
+      const result = await tx.inviteCode.updateMany({
+        where: { id: invite.id, usedBy: null },
+        data: { usedBy: user.id, usedAt: new Date() },
+      });
+
+      if (result.count === 0) {
+        throw new Error("INVITE_TAKEN");
+      }
+      return true;
+    }).catch((e) => {
+      if (e instanceof Error && e.message === "INVITE_TAKEN") return false;
+      throw e;
     });
 
-    await db.inviteCode.update({
-      where: { id: invite.id },
-      data: { usedBy: user.id, usedAt: new Date() },
-    });
+    if (!claimed) {
+      return NextResponse.json({ error: "Invalid or already-used invite code." }, { status: 400 });
+    }
 
     return NextResponse.json({ success: true });
   } catch {

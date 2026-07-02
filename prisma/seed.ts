@@ -14,15 +14,24 @@ async function main() {
   let admin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!admin) {
     const bcrypt = await import("bcryptjs");
-    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || "changeme123", 12);
+    let password = process.env.ADMIN_PASSWORD;
+    if (!password) {
+      password = randomUUID().slice(0, 16);
+      console.log(`No ADMIN_PASSWORD set — generated one: ${password}`);
+      console.log("Save it now; it will not be shown again.");
+    }
+    const hash = await bcrypt.hash(password, 12);
     admin = await prisma.user.create({
       data: {
         email: adminEmail,
         name: "Admin",
         passwordHash: hash,
+        isAdmin: true,
       },
     });
     console.log(`Created admin user: ${adminEmail}`);
+  } else if (!admin.isAdmin) {
+    admin = await prisma.user.update({ where: { id: admin.id }, data: { isAdmin: true } });
   }
 
   for (const code of codes) {

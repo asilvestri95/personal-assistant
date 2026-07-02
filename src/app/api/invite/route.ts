@@ -24,6 +24,11 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const me = await db.user.findUnique({ where: { id: session.user.id } });
+  if (!me?.isAdmin) {
+    return NextResponse.json({ error: "Only admins can create invite codes." }, { status: 403 });
+  }
+
   const body = await req.json();
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });

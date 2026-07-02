@@ -40,6 +40,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ listId:
     data: { shareType, shareToken },
   });
 
+  if (shareType === "PUBLIC") {
+    // Stale invite rows would silently regain access on a later switch back
+    await db.packingListShare.deleteMany({ where: { listId } });
+  }
+
   if (shareType === "INVITE_ONLY" && inviteEmails?.length) {
     const users = await db.user.findMany({
       where: { email: { in: inviteEmails } },
@@ -54,5 +59,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ listId:
     }
   }
 
-  return NextResponse.json({ ...updated, shareUrl: `${process.env.NEXT_PUBLIC_APP_URL}/share/${shareToken}` });
+  const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(req.url).origin;
+  return NextResponse.json({ ...updated, shareUrl: `${origin}/share/${shareToken}` });
 }

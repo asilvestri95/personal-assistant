@@ -17,6 +17,18 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    container_name: personal-assistant-migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/personal_assistant
+
   app:
     build:
       context: .
@@ -26,6 +38,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/personal_assistant
       AUTH_SECRET: ${AUTH_SECRET}
