@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Loader2, Check, X, Pencil, CheckSquare, Square } from "lucide-react";
+import { Trash2, Loader2, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PackingListItem } from "@prisma/client";
 
@@ -13,15 +13,20 @@ interface Props {
   onDelete: (id: string) => Promise<void>;
 }
 
+const inlineInputClass =
+  "w-full bg-transparent truncate rounded px-1 py-0.5 -mx-1 border border-transparent " +
+  "hover:border-border focus:border-border-focus focus:bg-bg-tertiary focus:outline-none transition-colors";
+
+function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
+  if (e.key === "Enter") e.currentTarget.blur();
+}
+
 export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }: Props) {
-  const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: item.name,
-    quantity: item.quantity,
-    bag: item.bag ?? "",
-    preTripNotes: item.preTripNotes ?? "",
-    postTripNotes: item.postTripNotes ?? "",
-  });
+  const [name, setName] = useState(item.name);
+  const [quantity, setQuantity] = useState(item.quantity);
+  const [bag, setBag] = useState(item.bag ?? "");
+  const [preTripNotes, setPreTripNotes] = useState(item.preTripNotes ?? "");
+  const [postTripNotes, setPostTripNotes] = useState(item.postTripNotes ?? "");
   const [deleting, setDeleting] = useState(false);
   const [savingField, setSavingField] = useState<string | null>(null);
 
@@ -31,15 +36,39 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
     setSavingField(null);
   }
 
-  async function saveEdit() {
-    await onUpdate(item.id, {
-      name: editForm.name,
-      quantity: editForm.quantity,
-      bag: editForm.bag || null,
-      preTripNotes: editForm.preTripNotes || null,
-      postTripNotes: editForm.postTripNotes || null,
-    });
-    setEditing(false);
+  async function saveName() {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setName(item.name);
+      return;
+    }
+    if (trimmed === item.name) return;
+    await onUpdate(item.id, { name: trimmed });
+  }
+
+  async function saveQuantity() {
+    const q = Number.isFinite(quantity) && quantity >= 1 ? quantity : item.quantity;
+    setQuantity(q);
+    if (q === item.quantity) return;
+    await onUpdate(item.id, { quantity: q });
+  }
+
+  async function saveBag() {
+    const trimmed = bag.trim();
+    if (trimmed === (item.bag ?? "")) return;
+    await onUpdate(item.id, { bag: trimmed || null });
+  }
+
+  async function savePreTripNotes() {
+    const trimmed = preTripNotes.trim();
+    if (trimmed === (item.preTripNotes ?? "")) return;
+    await onUpdate(item.id, { preTripNotes: trimmed || null });
+  }
+
+  async function savePostTripNotes() {
+    const trimmed = postTripNotes.trim();
+    if (trimmed === (item.postTripNotes ?? "")) return;
+    await onUpdate(item.id, { postTripNotes: trimmed || null });
   }
 
   async function handleDelete() {
@@ -51,42 +80,6 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
     ? "1fr 48px 96px 80px 80px 200px 200px 32px"
     : "1fr 48px 96px 80px 80px 200px 32px";
 
-  if (editing) {
-    return (
-      <div className="px-4 py-2 bg-bg-hover">
-        <div className="flex flex-wrap items-end gap-2 mb-2">
-          <div className="space-y-1">
-            <label className="text-[10px] text-text-muted">Name</label>
-            <input className="vscode-input w-44" value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} autoFocus />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-text-muted">Qty</label>
-            <input type="number" min={1} className="vscode-input w-16" value={editForm.quantity} onChange={(e) => setEditForm((f) => ({ ...f, quantity: parseInt(e.target.value) || 1 }))} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-text-muted">Bag</label>
-            <input className="vscode-input w-28" value={editForm.bag} onChange={(e) => setEditForm((f) => ({ ...f, bag: e.target.value }))} list="edit-bags" />
-            <datalist id="edit-bags">{existingBags.map((b) => <option key={b} value={b} />)}</datalist>
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-text-muted">Pre-trip Notes</label>
-            <input className="vscode-input w-48" value={editForm.preTripNotes} onChange={(e) => setEditForm((f) => ({ ...f, preTripNotes: e.target.value }))} />
-          </div>
-          {isCompleted && (
-            <div className="space-y-1">
-              <label className="text-[10px] text-text-muted">Post-trip Notes</label>
-              <input className="vscode-input w-48" value={editForm.postTripNotes} onChange={(e) => setEditForm((f) => ({ ...f, postTripNotes: e.target.value }))} />
-            </div>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <button onClick={saveEdit} className="vscode-btn-primary text-xs"><Check className="w-3 h-3" /> Save</button>
-          <button onClick={() => setEditing(false)} className="vscode-btn-secondary text-xs"><X className="w-3 h-3" /> Cancel</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className={cn(
@@ -96,15 +89,38 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       style={{ gridTemplateColumns: cols }}
     >
       {/* Name */}
-      <span className={cn("text-sm text-text truncate", item.packed && "line-through text-text-muted")}>
-        {item.name}
-      </span>
+      <input
+        className={cn(inlineInputClass, "text-sm text-text", item.packed && "line-through text-text-muted")}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={saveName}
+        onKeyDown={blurOnEnter}
+      />
 
       {/* Qty */}
-      <span className="text-xs text-text-muted text-center">{item.quantity}×</span>
+      <input
+        type="number"
+        min={1}
+        className={cn(inlineInputClass, "text-xs text-text-muted text-center")}
+        value={quantity}
+        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+        onBlur={saveQuantity}
+        onKeyDown={blurOnEnter}
+      />
 
       {/* Bag */}
-      <span className="text-xs text-text-muted truncate">{item.bag ?? "—"}</span>
+      <input
+        className={cn(inlineInputClass, "text-xs text-text-muted")}
+        placeholder="—"
+        value={bag}
+        onChange={(e) => setBag(e.target.value)}
+        onBlur={saveBag}
+        onKeyDown={blurOnEnter}
+        list={`bag-options-${item.id}`}
+      />
+      <datalist id={`bag-options-${item.id}`}>
+        {existingBags.map((b) => <option key={b} value={b} />)}
+      </datalist>
 
       {/* Gathered */}
       <button
@@ -137,22 +153,29 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       </button>
 
       {/* Pre-trip notes */}
-      <span className="text-xs text-text-muted truncate" title={item.preTripNotes ?? ""}>
-        {item.preTripNotes || <span className="opacity-30">—</span>}
-      </span>
+      <input
+        className={cn(inlineInputClass, "text-xs text-text-muted")}
+        placeholder="—"
+        value={preTripNotes}
+        onChange={(e) => setPreTripNotes(e.target.value)}
+        onBlur={savePreTripNotes}
+        onKeyDown={blurOnEnter}
+      />
 
       {/* Post-trip notes (completed only) */}
       {isCompleted && (
-        <span className="text-xs text-text-muted truncate" title={item.postTripNotes ?? ""}>
-          {item.postTripNotes || <span className="opacity-30">—</span>}
-        </span>
+        <input
+          className={cn(inlineInputClass, "text-xs text-text-muted")}
+          placeholder="—"
+          value={postTripNotes}
+          onChange={(e) => setPostTripNotes(e.target.value)}
+          onBlur={savePostTripNotes}
+          onKeyDown={blurOnEnter}
+        />
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={() => setEditing(true)} className="vscode-btn-ghost p-1">
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
+      <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={handleDelete} disabled={deleting} className="vscode-btn-ghost p-1 hover:text-status-error">
           {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
         </button>

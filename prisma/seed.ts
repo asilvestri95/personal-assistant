@@ -13,7 +13,7 @@ async function main() {
 
   let admin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!admin) {
-    const bcrypt = await import("bcryptjs");
+    const { default: bcrypt } = await import("bcryptjs");
     let password = process.env.ADMIN_PASSWORD;
     if (!password) {
       password = randomUUID().slice(0, 16);

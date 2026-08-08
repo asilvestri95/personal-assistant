@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Link, Lock, Globe, UserPlus, Loader2, Check, Copy } from "lucide-react";
+import { X, Link, Lock, Globe, Loader2, Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PackingList } from "@prisma/client";
 

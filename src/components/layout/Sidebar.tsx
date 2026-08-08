@@ -3,18 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Package, LogOut, ChevronRight } from "lucide-react";
+import { Package, LogOut, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
   user: { name?: string | null; email?: string | null };
+  isAdmin?: boolean;
 }
 
 const NAV = [
   { label: "Packing Lists", href: "/packing", icon: Package },
 ];
 
-export function Sidebar({ user }: SidebarProps) {
+const ADMIN_NAV = [
+  { label: "Admin", href: "/admin", icon: ShieldCheck },
+];
+
+export function Sidebar({ user, isAdmin }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -49,6 +54,31 @@ export function Sidebar({ user }: SidebarProps) {
             );
           })}
         </div>
+
+        {isAdmin && (
+          <div className="px-2 mb-1">
+            <p className="text-[10px] uppercase tracking-widest text-text-muted px-2 py-1">Admin</p>
+            {ADMIN_NAV.map(({ label, href, icon: Icon }) => {
+              const active = pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors group",
+                    active
+                      ? "bg-bg-active text-text-bright"
+                      : "text-text-muted hover:text-text hover:bg-bg-hover"
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{label}</span>
+                  {active && <ChevronRight className="w-3 h-3 ml-auto shrink-0" />}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       {/* Footer */}

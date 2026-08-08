@@ -280,7 +280,10 @@ export function PackingListDetail({ list: initial }: Props) {
                   {/* Column headers */}
                   {!isCollapsed && (
                     <>
-                      <div className="grid items-center px-4 py-1.5 border-b border-border bg-bg-secondary" style={{ gridTemplateColumns: "1fr 48px 96px 80px 80px 200px 200px 32px" }}>
+                      <div
+                        className="grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary"
+                        style={{ gridTemplateColumns: isCompleted ? "1fr 48px 96px 80px 80px 200px 200px 32px" : "1fr 48px 96px 80px 80px 200px 32px" }}
+                      >
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Item</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Qty</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Bag</span>
