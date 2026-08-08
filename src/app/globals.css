@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+    --font-mono: "Consolas", "Menlo", monospace;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-bg text-text antialiased;
+    font-family: var(--font-inter);
+  }
+
+  /* Scrollbar styling — VSCode-like */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(0, 122, 204, 0.3);
+  }
+}
+
+@layer components {
+  .vscode-input {
+    @apply w-full bg-bg-tertiary border border-border rounded px-3 py-1.5 text-text text-sm
+           focus:outline-none focus:border-border-focus focus:ring-1 focus:ring-border-focus
+           placeholder:text-text-muted;
+  }
+
+  .vscode-btn {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium
+           transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .vscode-btn-primary {
+    @apply vscode-btn bg-accent-blue text-white hover:bg-blue-600;
+  }
+
+  .vscode-btn-secondary {
+    @apply vscode-btn bg-bg-tertiary text-text border border-border hover:bg-bg-hover;
+  }
+
+  .vscode-btn-ghost {
+    @apply vscode-btn text-text-muted hover:text-text hover:bg-bg-hover;
+  }
+
+  .vscode-btn-danger {
+    @apply vscode-btn bg-transparent text-status-error border border-status-error hover:bg-red-900/20;
+  }
+
+  .card {
+    @apply bg-bg-secondary border border-border rounded-md;
+  }
+
+  .card-header {
+    @apply px-4 py-3 border-b border-border flex items-center justify-between;
+  }
+
+  .card-body {
+    @apply p-4;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .badge-blue {
+    @apply badge bg-accent-blue/20 text-accent-blue;
+  }
+
+  .badge-green {
+    @apply badge bg-accent-green/20 text-accent-green;
+  }
+
+  .badge-yellow {
+    @apply badge bg-accent-yellow/20 text-accent-yellow;
+  }
+
+  .badge-gray {
+    @apply badge bg-bg-tertiary text-text-muted;
+  }
+}
