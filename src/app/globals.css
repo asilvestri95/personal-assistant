@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     --font-inter: "Inter", system-ui, sans-serif;
     --font-mono: "Consolas", "Menlo", monospace;
   }
@@ -78,6 +79,20 @@
     @apply p-4;
   }
 
+  /* Row actions: hidden until hover on mouse devices, always visible on touch */
+  .reveal-on-hover {
+    @apply transition-opacity;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .reveal-on-hover {
+      @apply opacity-0;
+    }
+    .group:hover .reveal-on-hover,
+    .group:focus-within .reveal-on-hover {
+      @apply opacity-100;
+    }
+  }
+
   .badge {
     @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
   }
@@ -96,5 +111,14 @@
 
   .badge-gray {
     @apply badge bg-bg-tertiary text-text-muted;
+  }
+}
+
+/* iOS Safari zooms into inputs under 16px on focus; keep them at 16px on small screens */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }

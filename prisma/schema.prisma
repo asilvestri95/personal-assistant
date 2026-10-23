@@ -22,6 +22,7 @@ model User {
   sessions      Session[]
   packingLists  PackingList[]
   defaultItems  DefaultPackingItem[]
+  bags          Bag[]
   inviteCodesCreated InviteCode[] @relation("CreatedBy")
   sharedListAccess   PackingListShare[]
 
@@ -96,6 +97,20 @@ model DefaultPackingItem {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("default_packing_items")
+}
+
+model Bag {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("bags")
 }
 
 // ─── Packing Lists ───────────────────────────────────────────────────────────

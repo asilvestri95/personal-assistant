@@ -2,13 +2,20 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import * as Tabs from "@radix-ui/react-tabs";
 import { Plus, Trash2, Loader2, ChevronLeft, GripVertical, Download, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { DefaultPackingItem } from "@prisma/client";
+import type { Bag, DefaultPackingItem } from "@prisma/client";
+import { BagsTab } from "./BagsTab";
 
 interface Props {
   items: DefaultPackingItem[];
+  bags: Bag[];
 }
+
+const tabClass =
+  "px-4 py-2 -mb-px text-sm border-b-2 border-transparent text-text-muted hover:text-text transition-colors " +
+  "data-[state=active]:border-accent-blue data-[state=active]:text-text-bright";
 
 const inlineInputClass =
   "bg-transparent truncate rounded px-1 py-0.5 -mx-1 border border-transparent " +
@@ -111,23 +118,23 @@ function DefaultItemRow({ item, onUpdate, onDelete, deleting }: RowProps) {
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 group">
-      <GripVertical className="w-4 h-4 text-text-muted/30 shrink-0" />
+      <GripVertical className="hidden sm:block w-4 h-4 text-text-muted/30 shrink-0" />
       <input
-        className={cn(inlineInputClass, "flex-1 text-sm text-text")}
+        className={cn(inlineInputClass, "flex-1 min-w-0 text-sm text-text")}
         value={name}
         onChange={(e) => setName(e.target.value)}
         onBlur={saveName}
         onKeyDown={blurOnEnter}
       />
       <input
-        className={cn(inlineInputClass, "w-32 text-sm text-text-muted")}
+        className={cn(inlineInputClass, "w-24 sm:w-32 shrink-0 text-sm text-text-muted")}
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         onBlur={saveCategory}
         onKeyDown={blurOnEnter}
         list="categories"
       />
-      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center reveal-on-hover">
         <button
           onClick={() => onDelete(item.id)}
           disabled={deleting}
@@ -140,7 +147,7 @@ function DefaultItemRow({ item, onUpdate, onDelete, deleting }: RowProps) {
   );
 }
 
-export function DefaultsClient({ items: initial }: Props) {
+export function DefaultsClient({ items: initial, bags }: Props) {
   const [items, setItems] = useState(initial);
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("");
@@ -231,98 +238,114 @@ export function DefaultsClient({ items: initial }: Props) {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
+      <div className="flex items-center gap-3 mb-4">
         <Link href="/packing" className="vscode-btn-ghost p-1">
           <ChevronLeft className="w-4 h-4" />
         </Link>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold text-text-bright">Default Items</h1>
-          <p className="text-sm text-text-muted">These items are added to every new packing list</p>
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={handleImportFile}
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={importing}
-          className="vscode-btn-secondary text-xs"
-        >
-          {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-          Import CSV
-        </button>
-        <button onClick={handleExport} disabled={items.length === 0} className="vscode-btn-secondary text-xs">
-          <Download className="w-3.5 h-3.5" />
-          Export CSV
-        </button>
+        <h1 className="text-lg font-semibold text-text-bright">Defaults</h1>
       </div>
 
-      {/* Add form */}
-      <div className="card mb-6">
-        <div className="card-header">
-          <span className="text-sm font-medium text-text-bright">Add Item</span>
-        </div>
-        <div className="card-body">
-          <form onSubmit={handleAdd} className="flex gap-2">
-            <input
-              className="vscode-input flex-1"
-              placeholder="Item name"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              required
-            />
-            <input
-              className="vscode-input w-40"
-              placeholder="Category"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              list="categories"
-              required
-            />
-            <datalist id="categories">
-              {existingCategories.map((c) => <option key={c} value={c} />)}
-            </datalist>
-            <button type="submit" disabled={adding} className="vscode-btn-primary shrink-0">
-              {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              Add
-            </button>
-          </form>
-        </div>
-      </div>
+      <Tabs.Root defaultValue="items">
+        <Tabs.List className="flex border-b border-border mb-6">
+          <Tabs.Trigger value="items" className={tabClass}>Items</Tabs.Trigger>
+          <Tabs.Trigger value="bags" className={tabClass}>Bags</Tabs.Trigger>
+        </Tabs.List>
 
-      {/* Items grouped by category */}
-      {items.length === 0 ? (
-        <div className="card flex flex-col items-center py-12 text-center">
-          <p className="text-text-muted">No default items yet.</p>
-          <p className="text-text-muted/60 text-sm mt-1">Add items above, or import a CSV, to auto-populate new packing lists.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {categories.map((category) => (
-            <div key={category} className="card">
-              <div className="card-header">
-                <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">{category}</span>
-                <span className="text-xs text-text-muted">{grouped[category].length} items</span>
-              </div>
-              <div className="divide-y divide-border">
-                {grouped[category].map((item) => (
-                  <DefaultItemRow
-                    key={item.id}
-                    item={item}
-                    onUpdate={updateItem}
-                    onDelete={handleDelete}
-                    deleting={deletingId === item.id}
-                  />
-                ))}
-              </div>
+        <Tabs.Content value="items">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <p className="flex-1 min-w-0 text-sm text-text-muted">These items are added to every new packing list</p>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleImportFile}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+                className="vscode-btn-secondary text-xs"
+              >
+                {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                Import CSV
+              </button>
+              <button onClick={handleExport} disabled={items.length === 0} className="vscode-btn-secondary text-xs">
+                <Download className="w-3.5 h-3.5" />
+                Export CSV
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+
+          {/* Add form */}
+          <div className="card mb-6">
+            <div className="card-header">
+              <span className="text-sm font-medium text-text-bright">Add Item</span>
+            </div>
+            <div className="card-body">
+              <form onSubmit={handleAdd} className="flex flex-wrap sm:flex-nowrap gap-2">
+                <input
+                  className="vscode-input w-full sm:flex-1"
+                  placeholder="Item name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  required
+                />
+                <input
+                  className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-40"
+                  placeholder="Category"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  list="categories"
+                  required
+                />
+                <datalist id="categories">
+                  {existingCategories.map((c) => <option key={c} value={c} />)}
+                </datalist>
+                <button type="submit" disabled={adding} className="vscode-btn-primary shrink-0">
+                  {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  Add
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Items grouped by category */}
+          {items.length === 0 ? (
+            <div className="card flex flex-col items-center py-12 text-center">
+              <p className="text-text-muted">No default items yet.</p>
+              <p className="text-text-muted/60 text-sm mt-1">Add items above, or import a CSV, to auto-populate new packing lists.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {categories.map((category) => (
+                <div key={category} className="card">
+                  <div className="card-header">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">{category}</span>
+                    <span className="text-xs text-text-muted">{grouped[category].length} items</span>
+                  </div>
+                  <div className="divide-y divide-border">
+                    {grouped[category].map((item) => (
+                      <DefaultItemRow
+                        key={item.id}
+                        item={item}
+                        onUpdate={updateItem}
+                        onDelete={handleDelete}
+                        deleting={deletingId === item.id}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Tabs.Content>
+
+        <Tabs.Content value="bags">
+          <BagsTab bags={bags} />
+        </Tabs.Content>
+      </Tabs.Root>
     </div>
   );
 }

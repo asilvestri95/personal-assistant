@@ -17,5 +17,11 @@ export default async function PackingListPage({ params }: { params: Promise<{ li
 
   if (!list) notFound();
 
-  return <PackingListDetail list={list} />;
+  const bags = await db.bag.findMany({
+    where: { userId: session!.user.id },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { name: true },
+  });
+
+  return <PackingListDetail list={list} savedBags={bags.map((b) => b.name)} />;
 }

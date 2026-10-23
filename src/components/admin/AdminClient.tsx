@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   Plus, Loader2, Trash2, ShieldCheck, Shield, KeyRound, Copy, Check, X,
 } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 type SafeUser = {
   id: string;
@@ -19,7 +19,8 @@ interface Props {
   currentUserId: string;
 }
 
-const COLS = "1fr 1fr 90px 110px 76px";
+// Phones: name, role, actions / email. md+: one table row.
+const GRID = "grid-cols-[minmax(0,1fr)_auto_auto] md:grid-cols-[1fr_1fr_90px_110px_76px]";
 
 export function AdminClient({ users: initial, currentUserId }: Props) {
   const [users, setUsers] = useState(initial);
@@ -111,7 +112,7 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -129,10 +130,7 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
 
       {/* Table */}
       <div className="card overflow-hidden">
-        <div
-          className="grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary"
-          style={{ gridTemplateColumns: COLS }}
-        >
+        <div className={cn("hidden md:grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary", GRID)}>
           <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Name</span>
           <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Email</span>
           <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Role</span>
@@ -146,19 +144,18 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
             return (
               <div
                 key={user.id}
-                className="grid items-center gap-2 px-4 py-2 group hover:bg-bg-hover transition-colors"
-                style={{ gridTemplateColumns: COLS }}
+                className={cn("grid items-center gap-x-2 gap-y-0.5 px-4 py-2 group hover:bg-bg-hover transition-colors", GRID)}
               >
-                <span className="text-sm text-text truncate">
+                <span className="order-1 md:order-none text-sm text-text truncate">
                   {user.name || <span className="text-text-muted/50">—</span>}
                 </span>
-                <span className="text-xs text-text-muted truncate">{user.email}</span>
+                <span className="order-4 md:order-none col-span-3 md:col-span-1 text-xs text-text-muted truncate">{user.email}</span>
 
                 <button
                   onClick={() => toggleAdmin(user)}
                   disabled={isSelf || togglingId === user.id}
                   title={isSelf ? "You can't change your own admin status" : user.isAdmin ? "Remove admin access" : "Make admin"}
-                  className="flex justify-center disabled:cursor-not-allowed"
+                  className="order-2 md:order-none flex justify-center disabled:cursor-not-allowed"
                 >
                   {togglingId === user.id ? (
                     <Loader2 className="w-4 h-4 animate-spin text-text-muted" />
@@ -169,9 +166,9 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
                   )}
                 </button>
 
-                <span className="text-xs text-text-muted">{formatDate(user.createdAt)}</span>
+                <span className="hidden md:block text-xs text-text-muted">{formatDate(user.createdAt)}</span>
 
-                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="order-3 md:order-none flex items-center justify-end gap-1 reveal-on-hover">
                   <button
                     onClick={() => handleResetPassword(user)}
                     disabled={resettingId === user.id}
@@ -198,7 +195,7 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
       {/* Add user modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-md">
+          <div className="card w-full max-w-md max-h-[90dvh] overflow-y-auto">
             <div className="card-header">
               <span className="text-sm font-medium text-text-bright">Add User</span>
               <button onClick={() => setShowAdd(false)} className="vscode-btn-ghost text-xs">Cancel</button>
@@ -260,9 +257,9 @@ export function AdminClient({ users: initial, currentUserId }: Props) {
       {/* Revealed password modal */}
       {revealed && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-md">
+          <div className="card w-full max-w-md max-h-[90dvh] overflow-y-auto">
             <div className="card-header">
-              <span className="text-sm font-medium text-text-bright">Password for {revealed.email}</span>
+              <span className="text-sm font-medium text-text-bright truncate">Password for {revealed.email}</span>
               <button onClick={() => setRevealed(null)} className="vscode-btn-ghost p-1">
                 <X className="w-4 h-4" />
               </button>
