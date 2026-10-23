@@ -159,14 +159,25 @@ export function PackingListDetail({ list: initial }: Props) {
           <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 flex-wrap">
             <input className="vscode-input w-full sm:w-52" value={headerForm.name} onChange={(e) => setHeaderForm((f) => ({ ...f, name: e.target.value }))} placeholder="Trip name" autoFocus />
             <input className="vscode-input w-full sm:w-40" value={headerForm.destination} onChange={(e) => setHeaderForm((f) => ({ ...f, destination: e.target.value }))} placeholder="Destination" />
-            <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.startDate} onChange={(e) => setHeaderForm((f) => ({ ...f, startDate: e.target.value }))} />
-            <span className="text-text-muted text-xs">to</span>
-            <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.endDate} onChange={(e) => setHeaderForm((f) => ({ ...f, endDate: e.target.value }))} />
-            <select className="vscode-input flex-1 sm:flex-none sm:w-32" value={headerForm.status} onChange={(e) => setHeaderForm((f) => ({ ...f, status: e.target.value as typeof headerForm.status }))}>
+            <label className="w-full sm:w-auto flex items-center gap-2">
+              <span className="sm:hidden w-10 shrink-0 text-xs text-text-muted">Start</span>
+              <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.startDate} onChange={(e) => setHeaderForm((f) => ({ ...f, startDate: e.target.value }))} />
+            </label>
+            <span className="hidden sm:inline text-text-muted text-xs">to</span>
+            <label className="w-full sm:w-auto flex items-center gap-2">
+              <span className="sm:hidden w-10 shrink-0 text-xs text-text-muted">End</span>
+              <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.endDate} onChange={(e) => setHeaderForm((f) => ({ ...f, endDate: e.target.value }))} />
+            </label>
+            <select className="vscode-input w-full sm:w-32" value={headerForm.status} onChange={(e) => setHeaderForm((f) => ({ ...f, status: e.target.value as typeof headerForm.status }))}>
               {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
-            <button onClick={saveHeader} className="vscode-btn-primary"><Check className="w-4 h-4" /> Save</button>
-            <button onClick={() => setEditingHeader(false)} className="vscode-btn-secondary"><X className="w-4 h-4" /></button>
+            <div className="w-full sm:w-auto flex items-center gap-2">
+              <button onClick={saveHeader} className="vscode-btn-primary"><Check className="w-4 h-4" /> Save</button>
+              <button onClick={() => setEditingHeader(false)} className="vscode-btn-secondary" title="Cancel">
+                <X className="w-4 h-4" />
+                <span className="sm:hidden">Cancel</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex-1 flex items-center gap-3 min-w-0">
@@ -274,7 +285,11 @@ export function PackingListDetail({ list: initial }: Props) {
                   >
                     {isCollapsed ? <ChevronRight className="w-3.5 h-3.5 text-text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-text-muted" />}
                     <span className="text-xs font-semibold uppercase tracking-wide text-text-muted flex-1 truncate">{category}</span>
-                    <span className="text-xs text-text-muted shrink-0">{catGathered}/{catItems.length} gathered · {catPacked}/{catItems.length} packed</span>
+                    <span className="text-xs text-text-muted shrink-0">
+                      <span className="text-accent-green">{catGathered}/{catItems.length} gathered</span>
+                      {" · "}
+                      <span className="text-accent-blue">{catPacked}/{catItems.length} packed</span>
+                    </span>
                   </button>
 
                   {/* Column headers */}

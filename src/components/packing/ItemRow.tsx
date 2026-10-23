@@ -141,7 +141,7 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
         ) : item.gathered ? (
           <CheckSquare className="w-4 h-4 text-accent-green" />
         ) : (
-          <Square className="w-4 h-4" />
+          <Square className="w-4 h-4 text-accent-green/50 lg:text-inherit" />
         )}
       </button>
 
@@ -157,7 +157,7 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
         ) : item.packed ? (
           <CheckSquare className="w-4 h-4 text-accent-blue" />
         ) : (
-          <Square className="w-4 h-4" />
+          <Square className="w-4 h-4 text-accent-blue/50 lg:text-inherit" />
         )}
       </button>
 

@@ -121,12 +121,12 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
                     <span className="order-1 md:order-none flex justify-center">
                       {item.gathered
                         ? <CheckSquare className="w-4 h-4 text-accent-green" />
-                        : <Square className="w-4 h-4 text-text-muted/30" />}
+                        : <Square className="w-4 h-4 text-accent-green/50 md:text-text-muted/30" />}
                     </span>
                     <span className="order-2 md:order-none flex justify-center">
                       {item.packed
                         ? <CheckSquare className="w-4 h-4 text-accent-blue" />
-                        : <Square className="w-4 h-4 text-text-muted/30" />}
+                        : <Square className="w-4 h-4 text-accent-blue/50 md:text-text-muted/30" />}
                     </span>
                     <span className={`order-6 md:order-none col-start-3 col-span-2 md:col-start-auto md:col-span-1 text-xs text-text-muted truncate ${item.preTripNotes || item.postTripNotes ? "" : "hidden md:block"}`}>
                       {item.preTripNotes || item.postTripNotes || "—"}
