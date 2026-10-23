@@ -7,10 +7,12 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return "—";
+  // Trip dates are stored as midnight UTC, so format in UTC to avoid showing the previous day
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
