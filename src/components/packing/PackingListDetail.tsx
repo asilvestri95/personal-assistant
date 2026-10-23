@@ -11,6 +11,7 @@ import { cn, formatDate, getProgress } from "@/lib/utils";
 import type { PackingList, PackingListItem } from "@prisma/client";
 import { ShareDialog } from "./ShareDialog";
 import { ItemRow, itemGridClass } from "./ItemRow";
+import { BagSelect } from "./BagSelect";
 
 type ListWithShares = PackingList & {
   items: PackingListItem[];
@@ -33,9 +34,10 @@ const STATUS_COLORS: Record<string, string> = {
 
 interface Props {
   list: ListWithShares;
+  savedBags: string[];
 }
 
-export function PackingListDetail({ list: initial }: Props) {
+export function PackingListDetail({ list: initial, savedBags }: Props) {
   const [list, setList] = useState(initial);
   const [items, setItems] = useState(initial.items);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -63,7 +65,9 @@ export function PackingListDetail({ list: initial }: Props) {
   }, {});
   const categories = Object.keys(grouped).sort();
   const existingCategories = [...new Set(items.map((i) => i.category))].sort();
-  const existingBags = [...new Set(items.map((i) => i.bag).filter(Boolean))].sort() as string[];
+  // Saved bags first, then any one-time bags already used in this list
+  const oneTimeBags = [...new Set(items.map((i) => i.bag).filter((b): b is string => !!b && !savedBags.includes(b)))].sort();
+  const bagOptions = [...savedBags, ...oneTimeBags];
 
   const { gathered, packed, total } = getProgress(items);
   const isCompleted = list.status === "COMPLETED";
@@ -97,7 +101,7 @@ export function PackingListDetail({ list: initial }: Props) {
         name: newItem.name.trim(),
         category: newItem.category.trim() || "General",
         quantity: newItem.quantity,
-        bag: newItem.bag.trim() || null,
+        bag: newItem.bag || null,
         sortOrder: items.length,
       }),
     });
@@ -251,8 +255,12 @@ export function PackingListDetail({ list: initial }: Props) {
                   </div>
                   <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
                     <label className="text-[10px] text-text-muted">Bag</label>
-                    <input className="vscode-input sm:w-28" placeholder="Carry-on" value={newItem.bag} onChange={(e) => setNewItem((n) => ({ ...n, bag: e.target.value }))} list="item-bags" />
-                    <datalist id="item-bags">{existingBags.map((b) => <option key={b} value={b} />)}</datalist>
+                    <BagSelect
+                      className="vscode-input sm:w-40"
+                      value={newItem.bag}
+                      options={bagOptions}
+                      onChange={(bag) => setNewItem((n) => ({ ...n, bag }))}
+                    />
                   </div>
                   <button type="submit" disabled={addingItem} className="vscode-btn-primary">
                     {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
@@ -312,7 +320,7 @@ export function PackingListDetail({ list: initial }: Props) {
                             key={item.id}
                             item={item}
                             isCompleted={isCompleted}
-                            existingBags={existingBags}
+                            bagOptions={bagOptions}
                             onUpdate={updateItem}
                             onDelete={deleteItem}
                           />

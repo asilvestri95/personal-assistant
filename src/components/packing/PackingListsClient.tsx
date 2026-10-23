@@ -79,8 +79,7 @@ export function PackingListsClient({ lists: initial }: Props) {
         <div className="flex items-center gap-2">
           <Link href="/packing/defaults" className="vscode-btn-secondary">
             <Settings className="w-4 h-4" />
-            <span className="hidden sm:inline">Default Items</span>
-            <span className="sm:hidden">Defaults</span>
+            Defaults
           </Link>
           <button onClick={() => setShowNew(true)} className="vscode-btn-primary">
             <Plus className="w-4 h-4" />

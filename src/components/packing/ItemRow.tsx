@@ -4,11 +4,12 @@ import { useState } from "react";
 import { Trash2, Loader2, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PackingListItem } from "@prisma/client";
+import { BagSelect } from "./BagSelect";
 
 interface Props {
   item: PackingListItem;
   isCompleted: boolean;
-  existingBags: string[];
+  bagOptions: string[];
   onUpdate: (id: string, patch: Partial<PackingListItem>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
@@ -31,7 +32,7 @@ function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") e.currentTarget.blur();
 }
 
-export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: Props) {
   const [name, setName] = useState(item.name);
   const [quantity, setQuantity] = useState(item.quantity);
   const [bag, setBag] = useState(item.bag ?? "");
@@ -63,10 +64,10 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
     await onUpdate(item.id, { quantity: q });
   }
 
-  async function saveBag() {
-    const trimmed = bag.trim();
-    if (trimmed === (item.bag ?? "")) return;
-    await onUpdate(item.id, { bag: trimmed || null });
+  async function saveBag(next: string) {
+    setBag(next);
+    if (next === (item.bag ?? "")) return;
+    await onUpdate(item.id, { bag: next || null });
   }
 
   async function savePreTripNotes() {
@@ -116,18 +117,12 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       />
 
       {/* Bag */}
-      <input
-        className={cn(inlineInputClass, "order-6 col-start-3 lg:order-none lg:col-start-auto text-xs text-text-muted")}
-        placeholder="Bag"
+      <BagSelect
+        className={cn(inlineInputClass, "order-6 col-start-3 lg:order-none lg:col-start-auto text-xs text-text-muted cursor-pointer")}
         value={bag}
-        onChange={(e) => setBag(e.target.value)}
-        onBlur={saveBag}
-        onKeyDown={blurOnEnter}
-        list={`bag-options-${item.id}`}
+        options={bagOptions}
+        onChange={saveBag}
       />
-      <datalist id={`bag-options-${item.id}`}>
-        {existingBags.map((b) => <option key={b} value={b} />)}
-      </datalist>
 
       {/* Gathered */}
       <button

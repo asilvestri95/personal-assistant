@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: dark;
     --font-inter: "Inter", system-ui, sans-serif;
     --font-mono: "Consolas", "Menlo", monospace;
   }
