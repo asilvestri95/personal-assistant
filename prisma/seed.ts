@@ -4,6 +4,12 @@ import { randomUUID } from "crypto";
 const prisma = new PrismaClient();
 
 async function main() {
+  // Only seed a fresh database, so deleted codes or demoted admins aren't restored on restart
+  if ((await prisma.user.count()) > 0) {
+    console.log("Database already has users — skipping seed.");
+    return;
+  }
+
   // Create initial invite codes
   const codes = ["WELCOME-2024", "PACK-IT-UP", "ASSISTANT-01"];
 

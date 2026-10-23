@@ -17,13 +17,15 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-# Migration runner — has full node_modules so prisma CLI works
+# Migration runner — has full node_modules so prisma CLI and tsx work
 FROM base AS migrator
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
+COPY package.json tsconfig.json ./
 COPY prisma ./prisma
-CMD ["npx", "prisma", "migrate", "deploy"]
+RUN npx prisma generate
+# Seed is idempotent, so it's safe to run on every startup
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
 
 # Production image
 FROM base AS runner

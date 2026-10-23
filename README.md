@@ -57,7 +57,7 @@ Open http://localhost:3000. Register at `/register` with invite code `WELCOME-20
 docker compose up -d
 ```
 
-Migrations run automatically on startup.
+Migrations run automatically on startup. On a fresh database (no users yet), the seed also creates the admin user and invite codes. Set `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `.env` to control the admin account; if no password is set, a generated one is printed once in `docker compose logs migrate`.
 
 ---
 
