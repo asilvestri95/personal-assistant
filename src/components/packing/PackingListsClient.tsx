@@ -69,9 +69,9 @@ export function PackingListsClient({ lists: initial }: Props) {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-4 md:p-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-lg font-semibold text-text-bright">Packing Lists</h1>
           <p className="text-sm text-text-muted mt-0.5">{lists.length} trip{lists.length !== 1 ? "s" : ""}</p>
@@ -79,7 +79,8 @@ export function PackingListsClient({ lists: initial }: Props) {
         <div className="flex items-center gap-2">
           <Link href="/packing/defaults" className="vscode-btn-secondary">
             <Settings className="w-4 h-4" />
-            Default Items
+            <span className="hidden sm:inline">Default Items</span>
+            <span className="sm:hidden">Defaults</span>
           </Link>
           <button onClick={() => setShowNew(true)} className="vscode-btn-primary">
             <Plus className="w-4 h-4" />
@@ -91,7 +92,7 @@ export function PackingListsClient({ lists: initial }: Props) {
       {/* New list modal */}
       {showNew && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="card w-full max-w-md">
+          <div className="card w-full max-w-md max-h-[90dvh] overflow-y-auto">
             <div className="card-header">
               <span className="text-sm font-medium text-text-bright">New Packing List</span>
               <button onClick={() => setShowNew(false)} className="vscode-btn-ghost text-xs">Cancel</button>
@@ -170,13 +171,13 @@ export function PackingListsClient({ lists: initial }: Props) {
 
             return (
               <div key={list.id} className="card hover:border-border-focus/50 transition-colors group">
-                <div className="flex items-center gap-4 px-4 py-3">
+                <div className="flex items-center gap-2 sm:gap-4 px-4 py-3">
                   <Link href={`/packing/${list.id}`} className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium text-text-bright truncate">{list.name}</span>
                       <span className={cn("badge", status.className)}>{status.label}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-text-muted">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-text-muted">
                       {list.destination && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
@@ -200,7 +201,7 @@ export function PackingListsClient({ lists: initial }: Props) {
                   </Link>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 shrink-0 reveal-on-hover">
                     <button
                       onClick={() => handleCopy(list)}
                       disabled={copyingId === list.id}

@@ -17,6 +17,16 @@ const inlineInputClass =
   "w-full bg-transparent truncate rounded px-1 py-0.5 -mx-1 border border-transparent " +
   "hover:border-border focus:border-border-focus focus:bg-bg-tertiary focus:outline-none transition-colors";
 
+// Phones: two-line row (checkboxes, name, qty, delete / bag, notes). lg+: one table row.
+export function itemGridClass(isCompleted: boolean) {
+  return cn(
+    "grid-cols-[24px_24px_minmax(0,1fr)_minmax(0,1fr)_44px_28px]",
+    isCompleted
+      ? "lg:grid-cols-[1fr_48px_96px_80px_80px_200px_200px_32px]"
+      : "lg:grid-cols-[1fr_48px_96px_80px_80px_200px_32px]"
+  );
+}
+
 function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") e.currentTarget.blur();
 }
@@ -76,21 +86,17 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
     await onDelete(item.id);
   }
 
-  const cols = isCompleted
-    ? "1fr 48px 96px 80px 80px 200px 200px 32px"
-    : "1fr 48px 96px 80px 80px 200px 32px";
-
   return (
     <div
       className={cn(
-        "grid items-center px-4 py-2 gap-2 group hover:bg-bg-hover transition-colors",
+        "grid items-center px-4 py-2 gap-x-2 gap-y-1 group hover:bg-bg-hover transition-colors",
+        itemGridClass(isCompleted),
         item.packed && "opacity-60"
       )}
-      style={{ gridTemplateColumns: cols }}
     >
       {/* Name */}
       <input
-        className={cn(inlineInputClass, "text-sm text-text", item.packed && "line-through text-text-muted")}
+        className={cn(inlineInputClass, "order-3 col-span-2 lg:order-none lg:col-span-1 text-sm text-text", item.packed && "line-through text-text-muted")}
         value={name}
         onChange={(e) => setName(e.target.value)}
         onBlur={saveName}
@@ -101,7 +107,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       <input
         type="number"
         min={1}
-        className={cn(inlineInputClass, "text-xs text-text-muted text-center")}
+        className={cn(inlineInputClass, "order-4 lg:order-none text-xs text-text-muted text-center")}
+        aria-label="Quantity"
         value={quantity}
         onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
         onBlur={saveQuantity}
@@ -110,8 +117,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
 
       {/* Bag */}
       <input
-        className={cn(inlineInputClass, "text-xs text-text-muted")}
-        placeholder="—"
+        className={cn(inlineInputClass, "order-6 col-start-3 lg:order-none lg:col-start-auto text-xs text-text-muted")}
+        placeholder="Bag"
         value={bag}
         onChange={(e) => setBag(e.target.value)}
         onBlur={saveBag}
@@ -126,7 +133,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       <button
         onClick={() => toggleField("gathered")}
         disabled={savingField === "gathered"}
-        className="flex justify-center text-text-muted hover:text-accent-green transition-colors"
+        className="order-1 lg:order-none flex justify-center text-text-muted hover:text-accent-green transition-colors"
+        aria-label="Gathered"
       >
         {savingField === "gathered" ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -141,7 +149,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       <button
         onClick={() => toggleField("packed")}
         disabled={savingField === "packed"}
-        className="flex justify-center text-text-muted hover:text-accent-blue transition-colors"
+        className="order-2 lg:order-none flex justify-center text-text-muted hover:text-accent-blue transition-colors"
+        aria-label="Packed"
       >
         {savingField === "packed" ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -154,8 +163,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
 
       {/* Pre-trip notes */}
       <input
-        className={cn(inlineInputClass, "text-xs text-text-muted")}
-        placeholder="—"
+        className={cn(inlineInputClass, "order-7 col-span-3 lg:order-none lg:col-span-1 text-xs text-text-muted")}
+        placeholder="Pre-trip notes"
         value={preTripNotes}
         onChange={(e) => setPreTripNotes(e.target.value)}
         onBlur={savePreTripNotes}
@@ -165,8 +174,8 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       {/* Post-trip notes (completed only) */}
       {isCompleted && (
         <input
-          className={cn(inlineInputClass, "text-xs text-text-muted")}
-          placeholder="—"
+          className={cn(inlineInputClass, "order-8 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
+          placeholder="Post-trip notes"
           value={postTripNotes}
           onChange={(e) => setPostTripNotes(e.target.value)}
           onBlur={savePostTripNotes}
@@ -175,7 +184,7 @@ export function ItemRow({ item, isCompleted, existingBags, onUpdate, onDelete }:
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="order-5 lg:order-none flex items-center justify-end reveal-on-hover">
         <button onClick={handleDelete} disabled={deleting} className="vscode-btn-ghost p-1 hover:text-status-error">
           {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
         </button>

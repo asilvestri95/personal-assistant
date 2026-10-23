@@ -111,23 +111,23 @@ function DefaultItemRow({ item, onUpdate, onDelete, deleting }: RowProps) {
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 group">
-      <GripVertical className="w-4 h-4 text-text-muted/30 shrink-0" />
+      <GripVertical className="hidden sm:block w-4 h-4 text-text-muted/30 shrink-0" />
       <input
-        className={cn(inlineInputClass, "flex-1 text-sm text-text")}
+        className={cn(inlineInputClass, "flex-1 min-w-0 text-sm text-text")}
         value={name}
         onChange={(e) => setName(e.target.value)}
         onBlur={saveName}
         onKeyDown={blurOnEnter}
       />
       <input
-        className={cn(inlineInputClass, "w-32 text-sm text-text-muted")}
+        className={cn(inlineInputClass, "w-24 sm:w-32 shrink-0 text-sm text-text-muted")}
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         onBlur={saveCategory}
         onKeyDown={blurOnEnter}
         list="categories"
       />
-      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center reveal-on-hover">
         <button
           onClick={() => onDelete(item.id)}
           disabled={deleting}
@@ -231,34 +231,36 @@ export function DefaultsClient({ items: initial }: Props) {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <Link href="/packing" className="vscode-btn-ghost p-1">
           <ChevronLeft className="w-4 h-4" />
         </Link>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-lg font-semibold text-text-bright">Default Items</h1>
           <p className="text-sm text-text-muted">These items are added to every new packing list</p>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={handleImportFile}
-        />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={importing}
-          className="vscode-btn-secondary text-xs"
-        >
-          {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-          Import CSV
-        </button>
-        <button onClick={handleExport} disabled={items.length === 0} className="vscode-btn-secondary text-xs">
-          <Download className="w-3.5 h-3.5" />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing}
+            className="vscode-btn-secondary text-xs"
+          >
+            {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+            Import CSV
+          </button>
+          <button onClick={handleExport} disabled={items.length === 0} className="vscode-btn-secondary text-xs">
+            <Download className="w-3.5 h-3.5" />
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Add form */}
@@ -267,16 +269,16 @@ export function DefaultsClient({ items: initial }: Props) {
           <span className="text-sm font-medium text-text-bright">Add Item</span>
         </div>
         <div className="card-body">
-          <form onSubmit={handleAdd} className="flex gap-2">
+          <form onSubmit={handleAdd} className="flex flex-wrap sm:flex-nowrap gap-2">
             <input
-              className="vscode-input flex-1"
+              className="vscode-input w-full sm:flex-1"
               placeholder="Item name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               required
             />
             <input
-              className="vscode-input w-40"
+              className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-40"
               placeholder="Category"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}

@@ -65,7 +65,7 @@ export function ShareDialog({ list, onClose, onUpdate }: Props) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="card w-full max-w-md">
+      <div className="card w-full max-w-md max-h-[90dvh] overflow-y-auto">
         <div className="card-header">
           <span className="text-sm font-medium text-text-bright">Share List</span>
           <button onClick={onClose} className="vscode-btn-ghost p-1"><X className="w-4 h-4" /></button>
@@ -138,7 +138,7 @@ export function ShareDialog({ list, onClose, onUpdate }: Props) {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
             {list.shareType && (
               <button onClick={handleDisable} disabled={saving} className="vscode-btn-danger text-xs">
                 Disable sharing

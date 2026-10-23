@@ -10,9 +10,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const me = await db.user.findUnique({ where: { id: session.user.id }, select: { isAdmin: true } });
 
   return (
-    <div className="flex h-screen overflow-hidden bg-bg">
+    <div className="flex flex-col md:flex-row h-dvh overflow-hidden bg-bg">
       <Sidebar user={session.user} isAdmin={me?.isAdmin ?? false} />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 min-h-0 overflow-auto">{children}</main>
     </div>
   );
 }

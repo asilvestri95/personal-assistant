@@ -10,7 +10,7 @@ import {
 import { cn, formatDate, getProgress } from "@/lib/utils";
 import type { PackingList, PackingListItem } from "@prisma/client";
 import { ShareDialog } from "./ShareDialog";
-import { ItemRow } from "./ItemRow";
+import { ItemRow, itemGridClass } from "./ItemRow";
 
 type ListWithShares = PackingList & {
   items: PackingListItem[];
@@ -150,19 +150,19 @@ export function PackingListDetail({ list: initial }: Props) {
   return (
     <div className="h-full flex flex-col">
       {/* Top bar */}
-      <div className="border-b border-border bg-bg-secondary px-6 py-3 flex items-center gap-4 shrink-0">
+      <div className="border-b border-border bg-bg-secondary px-3 md:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 shrink-0">
         <Link href="/packing" className="vscode-btn-ghost p-1">
           <ChevronLeft className="w-4 h-4" />
         </Link>
 
         {editingHeader ? (
-          <div className="flex-1 flex items-center gap-3 flex-wrap">
-            <input className="vscode-input w-52" value={headerForm.name} onChange={(e) => setHeaderForm((f) => ({ ...f, name: e.target.value }))} placeholder="Trip name" autoFocus />
-            <input className="vscode-input w-40" value={headerForm.destination} onChange={(e) => setHeaderForm((f) => ({ ...f, destination: e.target.value }))} placeholder="Destination" />
-            <input type="date" className="vscode-input w-36" value={headerForm.startDate} onChange={(e) => setHeaderForm((f) => ({ ...f, startDate: e.target.value }))} />
+          <div className="flex-1 min-w-0 flex items-center gap-2 sm:gap-3 flex-wrap">
+            <input className="vscode-input w-full sm:w-52" value={headerForm.name} onChange={(e) => setHeaderForm((f) => ({ ...f, name: e.target.value }))} placeholder="Trip name" autoFocus />
+            <input className="vscode-input w-full sm:w-40" value={headerForm.destination} onChange={(e) => setHeaderForm((f) => ({ ...f, destination: e.target.value }))} placeholder="Destination" />
+            <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.startDate} onChange={(e) => setHeaderForm((f) => ({ ...f, startDate: e.target.value }))} />
             <span className="text-text-muted text-xs">to</span>
-            <input type="date" className="vscode-input w-36" value={headerForm.endDate} onChange={(e) => setHeaderForm((f) => ({ ...f, endDate: e.target.value }))} />
-            <select className="vscode-input w-32" value={headerForm.status} onChange={(e) => setHeaderForm((f) => ({ ...f, status: e.target.value as typeof headerForm.status }))}>
+            <input type="date" className="vscode-input flex-1 min-w-0 sm:flex-none sm:w-36" value={headerForm.endDate} onChange={(e) => setHeaderForm((f) => ({ ...f, endDate: e.target.value }))} />
+            <select className="vscode-input flex-1 sm:flex-none sm:w-32" value={headerForm.status} onChange={(e) => setHeaderForm((f) => ({ ...f, status: e.target.value as typeof headerForm.status }))}>
               {STATUS_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
             <button onClick={saveHeader} className="vscode-btn-primary"><Check className="w-4 h-4" /> Save</button>
@@ -177,7 +177,7 @@ export function PackingListDetail({ list: initial }: Props) {
                   {STATUS_OPTIONS.find((s) => s.value === list.status)?.label}
                 </span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-text-muted mt-0.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-text-muted mt-0.5">
                 {list.destination && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{list.destination}</span>}
                 {list.startDate && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(list.startDate)}{list.endDate && ` – ${formatDate(list.endDate)}`}</span>}
                 <span>{gathered}/{total} gathered · {packed}/{total} packed</span>
@@ -189,7 +189,7 @@ export function PackingListDetail({ list: initial }: Props) {
 
         {/* Progress bar */}
         {total > 0 && !editingHeader && (
-          <div className="w-24 shrink-0">
+          <div className="hidden sm:block w-24 shrink-0">
             <div className="h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
               <div className="h-full bg-accent-green rounded-full transition-all" style={{ width: `${Math.round((packed / total) * 100)}%` }} />
             </div>
@@ -197,10 +197,10 @@ export function PackingListDetail({ list: initial }: Props) {
           </div>
         )}
 
-        <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => setShowShare(true)} className="vscode-btn-secondary text-xs">
+        <div className={cn("flex items-center gap-1 shrink-0", editingHeader && "hidden sm:flex")}>
+          <button onClick={() => setShowShare(true)} className="vscode-btn-secondary text-xs" title="Share">
             <Share2 className="w-3.5 h-3.5" />
-            Share
+            <span className="hidden sm:inline">Share</span>
           </button>
           <button onClick={handleCopy} className="vscode-btn-ghost p-1.5" title="Copy list">
             <Copy className="w-4 h-4" />
@@ -209,7 +209,7 @@ export function PackingListDetail({ list: initial }: Props) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-4xl mx-auto space-y-4">
 
           {/* Add item */}
@@ -225,22 +225,22 @@ export function PackingListDetail({ list: initial }: Props) {
             {showAddForm && (
               <div className="border-t border-border px-4 py-3">
                 <form onSubmit={handleAddItem} className="flex items-end gap-2 flex-wrap">
-                  <div className="space-y-1">
+                  <div className="space-y-1 w-full sm:w-auto">
                     <label className="text-[10px] text-text-muted">Item Name *</label>
-                    <input className="vscode-input w-44" placeholder="Passport" value={newItem.name} onChange={(e) => setNewItem((n) => ({ ...n, name: e.target.value }))} required autoFocus />
+                    <input className="vscode-input sm:w-44" placeholder="Passport" value={newItem.name} onChange={(e) => setNewItem((n) => ({ ...n, name: e.target.value }))} required autoFocus />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
                     <label className="text-[10px] text-text-muted">Category</label>
-                    <input className="vscode-input w-32" placeholder="Documents" value={newItem.category} onChange={(e) => setNewItem((n) => ({ ...n, category: e.target.value }))} list="item-cats" />
+                    <input className="vscode-input sm:w-32" placeholder="Documents" value={newItem.category} onChange={(e) => setNewItem((n) => ({ ...n, category: e.target.value }))} list="item-cats" />
                     <datalist id="item-cats">{existingCategories.map((c) => <option key={c} value={c} />)}</datalist>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] text-text-muted">Qty</label>
                     <input type="number" min={1} className="vscode-input w-16" value={newItem.quantity} onChange={(e) => setNewItem((n) => ({ ...n, quantity: parseInt(e.target.value) || 1 }))} />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
                     <label className="text-[10px] text-text-muted">Bag</label>
-                    <input className="vscode-input w-28" placeholder="Carry-on" value={newItem.bag} onChange={(e) => setNewItem((n) => ({ ...n, bag: e.target.value }))} list="item-bags" />
+                    <input className="vscode-input sm:w-28" placeholder="Carry-on" value={newItem.bag} onChange={(e) => setNewItem((n) => ({ ...n, bag: e.target.value }))} list="item-bags" />
                     <datalist id="item-bags">{existingBags.map((b) => <option key={b} value={b} />)}</datalist>
                   </div>
                   <button type="submit" disabled={addingItem} className="vscode-btn-primary">
@@ -273,17 +273,14 @@ export function PackingListDetail({ list: initial }: Props) {
                     className="w-full flex items-center gap-2 px-4 py-2.5 bg-bg-tertiary hover:bg-bg-hover transition-colors text-left"
                   >
                     {isCollapsed ? <ChevronRight className="w-3.5 h-3.5 text-text-muted" /> : <ChevronDown className="w-3.5 h-3.5 text-text-muted" />}
-                    <span className="text-xs font-semibold uppercase tracking-wide text-text-muted flex-1">{category}</span>
-                    <span className="text-xs text-text-muted">{catGathered}/{catItems.length} gathered · {catPacked}/{catItems.length} packed</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-text-muted flex-1 truncate">{category}</span>
+                    <span className="text-xs text-text-muted shrink-0">{catGathered}/{catItems.length} gathered · {catPacked}/{catItems.length} packed</span>
                   </button>
 
                   {/* Column headers */}
                   {!isCollapsed && (
                     <>
-                      <div
-                        className="grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary"
-                        style={{ gridTemplateColumns: isCompleted ? "1fr 48px 96px 80px 80px 200px 200px 32px" : "1fr 48px 96px 80px 80px 200px 32px" }}
-                      >
+                      <div className={cn("hidden lg:grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary", itemGridClass(isCompleted))}>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Item</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Qty</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Bag</span>
