@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Package, LogOut, ChevronRight, ShieldCheck, Menu, X } from "lucide-react";
+import { Package, UserRound, LogOut, ChevronRight, ShieldCheck, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SidebarProps {
@@ -36,7 +36,7 @@ export function Sidebar({ user, isAdmin }: SidebarProps) {
         <button onClick={() => setOpen(true)} className="vscode-btn-ghost p-2" aria-label="Open menu">
           <Menu className="w-5 h-5" />
         </button>
-        <Package className="w-5 h-5 text-accent-blue shrink-0" />
+        <UserRound className="w-5 h-5 text-accent-blue shrink-0" />
         <span className="text-sm font-semibold text-text-bright truncate">Personal Assistant</span>
       </header>
 
@@ -52,7 +52,7 @@ export function Sidebar({ user, isAdmin }: SidebarProps) {
       >
         {/* Logo */}
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          <Package className="w-5 h-5 text-accent-blue shrink-0" />
+          <UserRound className="w-5 h-5 text-accent-blue shrink-0" />
           <span className="text-sm font-semibold text-text-bright truncate">Personal Assistant</span>
           <button onClick={() => setOpen(false)} className="md:hidden vscode-btn-ghost p-1 ml-auto" aria-label="Close menu">
             <X className="w-4 h-4" />

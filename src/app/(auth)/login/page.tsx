@@ -4,7 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Package } from "lucide-react";
+import { UserRound, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <Package className="w-7 h-7 text-accent-blue" />
+            <UserRound className="w-7 h-7 text-accent-blue" />
             <span className="text-xl font-semibold text-text-bright">Personal Assistant</span>
           </div>
           <p className="text-text-muted text-sm">Sign in to your account</p>

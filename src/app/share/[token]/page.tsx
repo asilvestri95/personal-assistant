@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-import { Package, MapPin, Calendar, CheckSquare, Square } from "lucide-react";
+import { UserRound, MapPin, Calendar, CheckSquare, Square } from "lucide-react";
 import Link from "next/link";
 
 // Phones: checkboxes, name, qty / bag / notes. md+: one table row.
@@ -50,7 +50,7 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
       <div className="border-b border-border bg-bg-secondary">
         <div className="max-w-4xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-accent-blue" />
+            <UserRound className="w-5 h-5 text-accent-blue" />
             <span className="text-sm font-semibold text-text-bright">Personal Assistant</span>
           </div>
           {session ? (
