@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Loader2, CheckSquare, Square } from "lucide-react";
+import { Pencil, Loader2, CheckSquare, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PackingListItem } from "@prisma/client";
 import { BagSelect } from "./BagSelect";
+import { EditItemDialog } from "./EditItemDialog";
 
 interface Props {
   item: PackingListItem;
   isCompleted: boolean;
   bagOptions: string[];
+  categoryOptions: string[];
   onUpdate: (id: string, patch: Partial<PackingListItem>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
@@ -18,7 +20,7 @@ const inlineInputClass =
   "w-full bg-transparent truncate rounded px-1 py-0.5 -mx-1 border border-transparent " +
   "hover:border-border focus:border-border-focus focus:bg-bg-tertiary focus:outline-none transition-colors";
 
-// Phones: two-line row (checkboxes, name, qty, delete / bag, notes). lg+: one table row.
+// Phones: stacked row (checkboxes, name, qty, edit / bag / notes). lg+: one table row.
 export function itemGridClass(isCompleted: boolean) {
   return cn(
     "grid-cols-[24px_24px_minmax(0,1fr)_minmax(0,1fr)_44px_28px]",
@@ -32,13 +34,13 @@ function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") e.currentTarget.blur();
 }
 
-export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpdate, onDelete }: Props) {
   const [name, setName] = useState(item.name);
   const [quantity, setQuantity] = useState(item.quantity);
   const [bag, setBag] = useState(item.bag ?? "");
   const [preTripNotes, setPreTripNotes] = useState(item.preTripNotes ?? "");
   const [postTripNotes, setPostTripNotes] = useState(item.postTripNotes ?? "");
-  const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [savingField, setSavingField] = useState<string | null>(null);
 
   async function toggleField(field: "gathered" | "packed") {
@@ -82,9 +84,10 @@ export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: P
     await onUpdate(item.id, { postTripNotes: trimmed || null });
   }
 
-  async function handleDelete() {
-    setDeleting(true);
-    await onDelete(item.id);
+  async function saveEdit(patch: { name: string; category: string }) {
+    setName(patch.name);
+    if (patch.name === item.name && patch.category === item.category) return;
+    await onUpdate(item.id, patch);
   }
 
   return (
@@ -118,7 +121,7 @@ export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: P
 
       {/* Bag */}
       <BagSelect
-        className={cn(inlineInputClass, "order-6 col-start-3 lg:order-none lg:col-start-auto text-xs text-text-muted cursor-pointer")}
+        className={cn(inlineInputClass, "order-6 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted cursor-pointer")}
         value={bag}
         options={bagOptions}
         onChange={saveBag}
@@ -158,7 +161,7 @@ export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: P
 
       {/* Pre-trip notes */}
       <input
-        className={cn(inlineInputClass, "order-7 col-span-3 lg:order-none lg:col-span-1 text-xs text-text-muted")}
+        className={cn(inlineInputClass, "order-7 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
         placeholder="Pre-trip notes"
         value={preTripNotes}
         onChange={(e) => setPreTripNotes(e.target.value)}
@@ -180,10 +183,20 @@ export function ItemRow({ item, isCompleted, bagOptions, onUpdate, onDelete }: P
 
       {/* Actions */}
       <div className="order-5 lg:order-none flex items-center justify-end reveal-on-hover">
-        <button onClick={handleDelete} disabled={deleting} className="vscode-btn-ghost p-1 hover:text-status-error">
-          {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+        <button onClick={() => setEditing(true)} className="vscode-btn-ghost p-1" title="Edit item">
+          <Pencil className="w-3.5 h-3.5" />
         </button>
       </div>
+
+      {editing && (
+        <EditItemDialog
+          item={item}
+          categoryOptions={categoryOptions}
+          onSave={saveEdit}
+          onDelete={() => onDelete(item.id)}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </div>
   );
 }

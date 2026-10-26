@@ -321,6 +321,7 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
                             item={item}
                             isCompleted={isCompleted}
                             bagOptions={bagOptions}
+                            categoryOptions={existingCategories}
                             onUpdate={updateItem}
                             onDelete={deleteItem}
                           />
