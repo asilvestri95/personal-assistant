@@ -20,6 +20,12 @@ export function generateToken(): string {
   return crypto.randomUUID().replace(/-/g, "");
 }
 
+// Parses a quantity field's text; null when empty or not a whole number >= 0
+export function parseQuantity(value: string): number | null {
+  const trimmed = value.trim();
+  return /^\d+$/.test(trimmed) ? parseInt(trimmed, 10) : null;
+}
+
 export function getProgress(items: { gathered: boolean; packed: boolean }[]) {
   if (items.length === 0) return { gathered: 0, packed: 0, total: 0 };
   const gathered = items.filter((i) => i.gathered).length;

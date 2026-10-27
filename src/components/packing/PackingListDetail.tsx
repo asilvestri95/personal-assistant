@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, Check, X, Pencil, Package2,
   MapPin, Calendar,
 } from "lucide-react";
-import { cn, formatDate, getProgress } from "@/lib/utils";
+import { cn, formatDate, getProgress, parseQuantity } from "@/lib/utils";
 import type { PackingList, PackingListItem } from "@prisma/client";
 import { ShareDialog } from "./ShareDialog";
 import { ItemRow, itemGridClass } from "./ItemRow";
@@ -52,7 +52,7 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
   });
 
   // New item form
-  const [newItem, setNewItem] = useState({ name: "", category: "", quantity: 1, bag: "" });
+  const [newItem, setNewItem] = useState({ name: "", category: "", quantity: "1", bag: "" });
   const [addingItem, setAddingItem] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -100,7 +100,7 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
       body: JSON.stringify({
         name: newItem.name.trim(),
         category: newItem.category.trim() || "General",
-        quantity: newItem.quantity,
+        quantity: parseQuantity(newItem.quantity) ?? 1,
         bag: newItem.bag || null,
         sortOrder: items.length,
       }),
@@ -251,7 +251,7 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] text-text-muted">Qty</label>
-                    <input type="number" min={1} className="vscode-input w-16" value={newItem.quantity} onChange={(e) => setNewItem((n) => ({ ...n, quantity: parseInt(e.target.value) || 1 }))} />
+                    <input type="number" min={0} inputMode="numeric" className="vscode-input w-16" value={newItem.quantity} onChange={(e) => setNewItem((n) => ({ ...n, quantity: e.target.value }))} />
                   </div>
                   <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
                     <label className="text-[10px] text-text-muted">Bag</label>

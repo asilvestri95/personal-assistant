@@ -6,7 +6,7 @@ import { z } from "zod";
 const updateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   category: z.string().min(1).max(100).optional(),
-  quantity: z.number().int().min(1).optional(),
+  quantity: z.number().int().min(0).optional(),
   bag: z.string().optional().nullable(),
   gathered: z.boolean().optional(),
   packed: z.boolean().optional(),

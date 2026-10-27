@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Pencil, Loader2, CheckSquare, Square } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, parseQuantity } from "@/lib/utils";
 import type { PackingListItem } from "@prisma/client";
 import { BagSelect } from "./BagSelect";
 import { EditItemDialog } from "./EditItemDialog";
@@ -30,18 +30,33 @@ export function itemGridClass(isCompleted: boolean) {
   );
 }
 
+const LG_QUERY = "(min-width: 1024px)";
+
+function subscribeLg(onChange: () => void) {
+  const mql = window.matchMedia(LG_QUERY);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
+// True at the lg breakpoint, where column headers label the notes fields.
+// The server snapshot assumes desktop; the client re-renders after hydration.
+function useIsLg() {
+  return useSyncExternalStore(subscribeLg, () => window.matchMedia(LG_QUERY).matches, () => true);
+}
+
 function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") e.currentTarget.blur();
 }
 
 export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpdate, onDelete }: Props) {
   const [name, setName] = useState(item.name);
-  const [quantity, setQuantity] = useState(item.quantity);
+  const [quantity, setQuantity] = useState(String(item.quantity));
   const [bag, setBag] = useState(item.bag ?? "");
   const [preTripNotes, setPreTripNotes] = useState(item.preTripNotes ?? "");
   const [postTripNotes, setPostTripNotes] = useState(item.postTripNotes ?? "");
   const [editing, setEditing] = useState(false);
   const [savingField, setSavingField] = useState<string | null>(null);
+  const isLg = useIsLg();
 
   async function toggleField(field: "gathered" | "packed") {
     setSavingField(field);
@@ -60,8 +75,9 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
   }
 
   async function saveQuantity() {
-    const q = Number.isFinite(quantity) && quantity >= 1 ? quantity : item.quantity;
-    setQuantity(q);
+    // Empty or invalid reverts to the last saved value
+    const q = parseQuantity(quantity) ?? item.quantity;
+    setQuantity(String(q));
     if (q === item.quantity) return;
     await onUpdate(item.id, { quantity: q });
   }
@@ -110,11 +126,12 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
       {/* Qty */}
       <input
         type="number"
-        min={1}
+        min={0}
+        inputMode="numeric"
         className={cn(inlineInputClass, "order-4 lg:order-none text-xs text-text-muted text-center")}
         aria-label="Quantity"
         value={quantity}
-        onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+        onChange={(e) => setQuantity(e.target.value)}
         onBlur={saveQuantity}
         onKeyDown={blurOnEnter}
       />
@@ -162,7 +179,7 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
       {/* Pre-trip notes */}
       <input
         className={cn(inlineInputClass, "order-7 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
-        placeholder="Pre-trip notes"
+        placeholder={isLg ? "—" : "Pre-trip notes"}
         value={preTripNotes}
         onChange={(e) => setPreTripNotes(e.target.value)}
         onBlur={savePreTripNotes}
@@ -173,7 +190,7 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
       {isCompleted && (
         <input
           className={cn(inlineInputClass, "order-8 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
-          placeholder="Post-trip notes"
+          placeholder={isLg ? "—" : "Post-trip notes"}
           value={postTripNotes}
           onChange={(e) => setPostTripNotes(e.target.value)}
           onBlur={savePostTripNotes}

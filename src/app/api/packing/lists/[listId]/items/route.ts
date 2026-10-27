@@ -6,7 +6,7 @@ import { z } from "zod";
 const createSchema = z.object({
   name: z.string().min(1).max(200),
   category: z.string().min(1).max(100),
-  quantity: z.number().int().min(1).default(1),
+  quantity: z.number().int().min(0).default(1),
   bag: z.string().optional().nullable(),
   preTripNotes: z.string().optional().nullable(),
   sortOrder: z.number().int().default(0),
