@@ -9,6 +9,8 @@ const updateSchema = z.object({
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   status: z.enum(["PLANNING", "PACKING", "TRAVELING", "COMPLETED"]).optional(),
+  preTripNotes: z.string().optional().nullable(),
+  postTripNotes: z.string().optional().nullable(),
 });
 
 async function getListForUser(listId: string, userId: string) {

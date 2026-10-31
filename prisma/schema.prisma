@@ -123,6 +123,8 @@ model PackingList {
   startDate   DateTime?
   endDate     DateTime?
   status      PackingListStatus @default(PLANNING)
+  preTripNotes  String?         @db.Text
+  postTripNotes String?         @db.Text
   shareType   ShareType?
   shareToken  String?           @unique
   createdAt   DateTime          @default(now())

@@ -12,6 +12,7 @@ import type { PackingList, PackingListItem } from "@prisma/client";
 import { ShareDialog } from "./ShareDialog";
 import { ItemRow, itemGridClass } from "./ItemRow";
 import { BagSelect } from "./BagSelect";
+import { TripNotes } from "./TripNotes";
 
 type ListWithShares = PackingList & {
   items: PackingListItem[];
@@ -89,6 +90,18 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
       const data = await res.json();
       setList((l) => ({ ...l, ...data }));
       setEditingHeader(false);
+    }
+  }
+
+  async function saveTripNotes(patch: { preTripNotes?: string | null; postTripNotes?: string | null }) {
+    const res = await fetch(`/api/packing/lists/${list.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setList((l) => ({ ...l, ...data }));
     }
   }
 
@@ -227,6 +240,14 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
       {/* Body */}
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-4xl mx-auto space-y-4">
+
+          <TripNotes
+            preTripNotes={list.preTripNotes}
+            postTripNotes={list.postTripNotes}
+            showPostTripNotes={showPostTripNotes}
+            locked={isLocked}
+            onSave={saveTripNotes}
+          />
 
           {/* Add item (hidden once the trip is completed) */}
           {!isLocked && (
