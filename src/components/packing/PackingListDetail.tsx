@@ -70,7 +70,8 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
   const bagOptions = [...savedBags, ...oneTimeBags];
 
   const { gathered, packed, total } = getProgress(items);
-  const isCompleted = list.status === "COMPLETED";
+  const showPostTripNotes = list.status === "TRAVELING" || list.status === "COMPLETED";
+  const isLocked = list.status === "COMPLETED";
 
   async function saveHeader() {
     const res = await fetch(`/api/packing/lists/${list.id}`, {
@@ -227,55 +228,57 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
       <div className="flex-1 overflow-auto p-3 md:p-6">
         <div className="max-w-4xl mx-auto space-y-4">
 
-          {/* Add item */}
-          <div className="card">
-            <button
-              onClick={() => setShowAddForm((v) => !v)}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-muted hover:text-text hover:bg-bg-hover transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add item
-              <ChevronDown className={cn("w-4 h-4 ml-auto transition-transform", showAddForm && "rotate-180")} />
-            </button>
-            {showAddForm && (
-              <div className="border-t border-border px-4 py-3">
-                <form onSubmit={handleAddItem} className="flex items-end gap-2 flex-wrap">
-                  <div className="space-y-1 w-full sm:w-auto">
-                    <label className="text-[10px] text-text-muted">Item Name *</label>
-                    <input className="vscode-input sm:w-44" placeholder="Passport" value={newItem.name} onChange={(e) => setNewItem((n) => ({ ...n, name: e.target.value }))} required autoFocus />
-                  </div>
-                  <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
-                    <label className="text-[10px] text-text-muted">Category</label>
-                    <input className="vscode-input sm:w-32" placeholder="Documents" value={newItem.category} onChange={(e) => setNewItem((n) => ({ ...n, category: e.target.value }))} list="item-cats" />
-                    <datalist id="item-cats">{existingCategories.map((c) => <option key={c} value={c} />)}</datalist>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] text-text-muted">Qty</label>
-                    <input type="number" min={0} inputMode="numeric" className="vscode-input w-16" value={newItem.quantity} onChange={(e) => setNewItem((n) => ({ ...n, quantity: e.target.value }))} />
-                  </div>
-                  <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
-                    <label className="text-[10px] text-text-muted">Bag</label>
-                    <BagSelect
-                      className="vscode-input sm:w-40"
-                      value={newItem.bag}
-                      options={bagOptions}
-                      onChange={(bag) => setNewItem((n) => ({ ...n, bag }))}
-                    />
-                  </div>
-                  <button type="submit" disabled={addingItem} className="vscode-btn-primary">
-                    {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                    Add
-                  </button>
-                </form>
-              </div>
-            )}
-          </div>
+          {/* Add item (hidden once the trip is completed) */}
+          {!isLocked && (
+            <div className="card">
+              <button
+                onClick={() => setShowAddForm((v) => !v)}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-text-muted hover:text-text hover:bg-bg-hover transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add item
+                <ChevronDown className={cn("w-4 h-4 ml-auto transition-transform", showAddForm && "rotate-180")} />
+              </button>
+              {showAddForm && (
+                <div className="border-t border-border px-4 py-3">
+                  <form onSubmit={handleAddItem} className="flex items-end gap-2 flex-wrap">
+                    <div className="space-y-1 w-full sm:w-auto">
+                      <label className="text-[10px] text-text-muted">Item Name *</label>
+                      <input className="vscode-input sm:w-44" placeholder="Passport" value={newItem.name} onChange={(e) => setNewItem((n) => ({ ...n, name: e.target.value }))} required autoFocus />
+                    </div>
+                    <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
+                      <label className="text-[10px] text-text-muted">Category</label>
+                      <input className="vscode-input sm:w-32" placeholder="Documents" value={newItem.category} onChange={(e) => setNewItem((n) => ({ ...n, category: e.target.value }))} list="item-cats" />
+                      <datalist id="item-cats">{existingCategories.map((c) => <option key={c} value={c} />)}</datalist>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-text-muted">Qty</label>
+                      <input type="number" min={0} inputMode="numeric" className="vscode-input w-16" value={newItem.quantity} onChange={(e) => setNewItem((n) => ({ ...n, quantity: e.target.value }))} />
+                    </div>
+                    <div className="space-y-1 flex-1 min-w-0 sm:flex-none">
+                      <label className="text-[10px] text-text-muted">Bag</label>
+                      <BagSelect
+                        className="vscode-input sm:w-40"
+                        value={newItem.bag}
+                        options={bagOptions}
+                        onChange={(bag) => setNewItem((n) => ({ ...n, bag }))}
+                      />
+                    </div>
+                    <button type="submit" disabled={addingItem} className="vscode-btn-primary">
+                      {addingItem ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                      Add
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Items by category */}
           {items.length === 0 ? (
             <div className="card flex flex-col items-center py-12 text-center">
               <Package2 className="w-10 h-10 text-text-muted/30 mb-3" />
-              <p className="text-text-muted">No items yet. Add your first item above.</p>
+              <p className="text-text-muted">{isLocked ? "No items on this trip." : "No items yet. Add your first item above."}</p>
             </div>
           ) : (
             categories.map((category) => {
@@ -303,14 +306,14 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
                   {/* Column headers */}
                   {!isCollapsed && (
                     <>
-                      <div className={cn("hidden lg:grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary", itemGridClass(isCompleted))}>
+                      <div className={cn("hidden lg:grid items-center gap-2 px-4 py-1.5 border-b border-border bg-bg-secondary", itemGridClass(showPostTripNotes))}>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Item</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Qty</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Bag</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Gathered</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60 text-center">Packed</span>
                         <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Pre-trip Notes</span>
-                        {isCompleted && <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Post-trip Notes</span>}
+                        {showPostTripNotes && <span className="text-[10px] uppercase tracking-wide text-text-muted/60">Post-trip Notes</span>}
                         <span />
                       </div>
 
@@ -319,7 +322,8 @@ export function PackingListDetail({ list: initial, savedBags }: Props) {
                           <ItemRow
                             key={item.id}
                             item={item}
-                            isCompleted={isCompleted}
+                            showPostTripNotes={showPostTripNotes}
+                            locked={isLocked}
                             bagOptions={bagOptions}
                             categoryOptions={existingCategories}
                             onUpdate={updateItem}

@@ -9,7 +9,9 @@ import { EditItemDialog } from "./EditItemDialog";
 
 interface Props {
   item: PackingListItem;
-  isCompleted: boolean;
+  showPostTripNotes: boolean;
+  // Completed trips: name, qty, bag, pre-trip notes and category are read-only
+  locked: boolean;
   bagOptions: string[];
   categoryOptions: string[];
   onUpdate: (id: string, patch: Partial<PackingListItem>) => Promise<void>;
@@ -18,13 +20,14 @@ interface Props {
 
 const inlineInputClass =
   "w-full bg-transparent truncate rounded px-1 py-0.5 -mx-1 border border-transparent " +
-  "hover:border-border focus:border-border-focus focus:bg-bg-tertiary focus:outline-none transition-colors";
+  "hover:border-border focus:border-border-focus focus:bg-bg-tertiary focus:outline-none transition-colors " +
+  "read-only:hover:border-transparent read-only:focus:border-transparent read-only:focus:bg-transparent read-only:cursor-default";
 
 // Phones: stacked row (checkboxes, name, qty, edit / bag / notes). lg+: one table row.
-export function itemGridClass(isCompleted: boolean) {
+export function itemGridClass(showPostTripNotes: boolean) {
   return cn(
     "grid-cols-[24px_24px_minmax(0,1fr)_minmax(0,1fr)_44px_28px]",
-    isCompleted
+    showPostTripNotes
       ? "lg:grid-cols-[1fr_48px_96px_80px_80px_200px_200px_32px]"
       : "lg:grid-cols-[1fr_48px_96px_80px_80px_200px_32px]"
   );
@@ -48,7 +51,7 @@ function blurOnEnter(e: React.KeyboardEvent<HTMLInputElement>) {
   if (e.key === "Enter") e.currentTarget.blur();
 }
 
-export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpdate, onDelete }: Props) {
+export function ItemRow({ item, showPostTripNotes, locked, bagOptions, categoryOptions, onUpdate, onDelete }: Props) {
   const [name, setName] = useState(item.name);
   const [quantity, setQuantity] = useState(String(item.quantity));
   const [bag, setBag] = useState(item.bag ?? "");
@@ -110,7 +113,7 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
     <div
       className={cn(
         "grid items-center px-4 py-2 gap-x-2 gap-y-1 group hover:bg-bg-hover transition-colors",
-        itemGridClass(isCompleted),
+        itemGridClass(showPostTripNotes),
         item.packed && "opacity-60"
       )}
     >
@@ -118,6 +121,7 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
       <input
         className={cn(inlineInputClass, "order-3 col-span-2 lg:order-none lg:col-span-1 text-sm text-text", item.packed && "line-through text-text-muted")}
         value={name}
+        readOnly={locked}
         onChange={(e) => setName(e.target.value)}
         onBlur={saveName}
         onKeyDown={blurOnEnter}
@@ -131,18 +135,29 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
         className={cn(inlineInputClass, "order-4 lg:order-none text-xs text-text-muted text-center")}
         aria-label="Quantity"
         value={quantity}
+        readOnly={locked}
         onChange={(e) => setQuantity(e.target.value)}
         onBlur={saveQuantity}
         onKeyDown={blurOnEnter}
       />
 
       {/* Bag */}
-      <BagSelect
-        className={cn(inlineInputClass, "order-6 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted cursor-pointer")}
-        value={bag}
-        options={bagOptions}
-        onChange={saveBag}
-      />
+      {locked ? (
+        <input
+          className={cn(inlineInputClass, "order-6 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
+          placeholder={isLg ? "—" : "No bag"}
+          value={bag}
+          aria-label="Bag"
+          readOnly
+        />
+      ) : (
+        <BagSelect
+          className={cn(inlineInputClass, "order-6 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted cursor-pointer")}
+          value={bag}
+          options={bagOptions}
+          onChange={saveBag}
+        />
+      )}
 
       {/* Gathered */}
       <button
@@ -181,13 +196,14 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
         className={cn(inlineInputClass, "order-7 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
         placeholder={isLg ? "—" : "Pre-trip notes"}
         value={preTripNotes}
+        readOnly={locked}
         onChange={(e) => setPreTripNotes(e.target.value)}
         onBlur={savePreTripNotes}
         onKeyDown={blurOnEnter}
       />
 
-      {/* Post-trip notes (completed only) */}
-      {isCompleted && (
+      {/* Post-trip notes (traveling and completed) */}
+      {showPostTripNotes && (
         <input
           className={cn(inlineInputClass, "order-8 col-start-3 col-span-4 lg:order-none lg:col-start-auto lg:col-span-1 text-xs text-text-muted")}
           placeholder={isLg ? "—" : "Post-trip notes"}
@@ -200,12 +216,14 @@ export function ItemRow({ item, isCompleted, bagOptions, categoryOptions, onUpda
 
       {/* Actions */}
       <div className="order-5 lg:order-none flex items-center justify-end reveal-on-hover">
-        <button onClick={() => setEditing(true)} className="vscode-btn-ghost p-1" title="Edit item">
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
+        {!locked && (
+          <button onClick={() => setEditing(true)} className="vscode-btn-ghost p-1" title="Edit item">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
-      {editing && (
+      {editing && !locked && (
         <EditItemDialog
           item={item}
           categoryOptions={categoryOptions}
